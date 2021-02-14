@@ -2,7 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import map from "./map";
 import getters from "./getters";
-
+import actions from "./actions";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
@@ -16,7 +16,8 @@ export default new Vuex.Store({
                 condition: false,
                 index: -1
             }
-        }
+        },
+        error: null
     },
     mutations: {
         SET_DOCS_TO(state, { decoded_docs, list, merge }) {
@@ -25,9 +26,15 @@ export default new Vuex.Store({
                 return;
             }
             state[list] = state[list].concat(decoded_docs);
+        },
+        CLEAR_ERROR(state) {
+            state.error = null;
+        },
+        SET_ERROR(state, msg) {
+            state.error = msg || "مشکلی در بارگزاری دیتا بوجود آمده ...";
         }
     },
     getters,
-    actions: {},
+    actions,
     modules: { map }
 });
