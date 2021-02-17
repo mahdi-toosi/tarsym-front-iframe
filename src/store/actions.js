@@ -6,15 +6,13 @@ export default {
     // !  read_this_doc
     async read_this_doc({ commit, dispatch }) {
         const _id = router.currentRoute.params._id;
-        const doc = await dispatch("get_this_docs", _id);
+        const doc = await dispatch("get_this_docs", [_id]);
         if (!doc) return;
-
-        const decoded_docs = await dispatch("decode_the_docs", { docs: [doc] });
-
-        commit("SET_DOCS_TO", {
-            decoded_docs: decoded_docs || [doc],
-            list: "readDoc",
-            merge: true
+        const decoded_docs = await dispatch("decode_the_docs", {
+            docs: doc
+        });
+        commit("SET_DOCS", {
+            decoded_docs: decoded_docs || doc
         });
 
         dispatch("flyToThisDoc", decoded_docs ? decoded_docs[0] : doc);
@@ -22,8 +20,11 @@ export default {
         await dispatch("change_map_layers", null);
 
         // * get childs , if have any
-        if (!doc.childs_id.length) return;
-        const childs = await dispatch("get_this_docs", doc.childs_id);
+        if (!doc[0].childs_id.length) return;
+        await dispatch("get_children", doc[0].childs_id);
+    },
+    async get_children({ dispatch, commit }, childs_id) {
+        const childs = await dispatch("get_this_docs", childs_id);
         if (!childs) return;
 
         const decoded_childs = await dispatch("decode_the_docs", {
@@ -31,40 +32,50 @@ export default {
             deleteRoot: true
         });
 
-        commit("SET_DOCS_TO", {
-            decoded_docs: decoded_childs,
-            list: "readDoc",
-            merge: true
+        commit("SET_DOCS", {
+            decoded_docs: decoded_childs
         });
     },
     // !  get_this_docs
-    async get_this_docs({ dispatch }, doc_ids) {
-        const is_doc_ids_array = Array.isArray(doc_ids),
-            url = `/api/v1/iframe/${is_doc_ids_array ? "" : doc_ids}`,
-            obj = { params: { "_id[$in]": doc_ids } },
-            options = is_doc_ids_array ? obj : {};
-
-        const docs = await axios
-            .get(url, options)
-            .then(res => res.data)
-            .catch(error => {
-                dispatch("handleAxiosError", error);
-                return false;
-            });
+    async get_this_docs({ state, dispatch }, _ids) {
+        let docs = [],
+            fetchThisIds = [];
+        _ids.forEach(id => {
+            const doc = state.readDoc.find(doc => doc._id === id);
+            if (doc) {
+                doc.alreadyFetched = true;
+                docs.push(doc);
+            } else {
+                fetchThisIds.push(id);
+            }
+        });
+        if (fetchThisIds.length) {
+            await axios
+                .post("/api/v1/iframe", { ids: fetchThisIds })
+                .then(({ data }) => {
+                    if (Array.isArray(data)) docs = [...docs, ...data];
+                    else docs.push(data);
+                })
+                .catch(error => {
+                    dispatch("handleAxiosError", error);
+                });
+        }
         return docs;
     },
     // ! decode_the_docs
-    async decode_the_docs({ dispatch }, { docs, deleteRoot }) {
+    async decode_the_docs(ctx, { docs, deleteRoot }) {
         const Docs = docs.data || docs;
         const newData = [];
         for (let index = 0; index < Docs.length; index++) {
             const doc = Docs[index];
+            if (doc.alreadyFetched) {
+                newData.push(doc);
+                continue;
+            }
             const junk = JSON.parse(doc.junk);
             delete doc.junk;
-            const imgs = await dispatch("getAllDocImages", junk.description);
             const decoded_Doc = {
                 ...doc,
-                imgs,
                 ...junk
             };
             // decoded_Doc.date = decoded_Doc.date - 2000000;

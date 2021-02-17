@@ -3,7 +3,7 @@
 export default {
     namespaced: true,
     state: {
-        zoom: 5,
+        zoom: 6,
         MouseCoordinate: null,
         center: ["32.879587173066305", "54.01105444025955"],
         layerIndex: 0,

@@ -27,35 +27,37 @@
                             "
                             :color="tool.color.hex8 || tool.color"
                             :lat-lngs="tool.coordinates"
-                            @click="goToThisDoc(tool._id)"
+                            @dblclick="goToThisDoc(tool._id)"
                             :visible="tool.visible"
                         >
                             <LTooltip v-if="tool.tooltip">
-                                {{ tool.tooltip }}
+                                <p>{{ tool.tooltip.text }}</p>
+                                <img
+                                    v-if="tool.tooltip.image"
+                                    :src="tool.tooltip.image"
+                                />
                             </LTooltip>
                         </LPolygon>
                     </div>
                     <!-- end Polygon -->
                     <div v-if="tool.type === 'Polyline'">
-                        <!-- <LMarker
-								v-for="(coordinate, index) in tool.coordinates"
-								:lat-lng="coordinate"
-								:key="index"
-								:icon="CircleIcon"
-                        />-->
                         <LPolyline
                             :lat-lngs="tool.coordinates"
                             :color="tool.color.hex8 || tool.color"
                             :dashArray="tool.dashed ? '10,10' : ''"
-                            @click="goToThisDoc(tool._id)"
+                            @dblclick="goToThisDoc(tool._id)"
                             :visible="tool.visible"
                         >
                             <LTooltip v-if="tool.tooltip">
-                                {{ tool.tooltip }}
+                                <p>{{ tool.tooltip.text }}</p>
+                                <img
+                                    v-if="tool.tooltip.image"
+                                    :src="tool.tooltip.image"
+                                />
                             </LTooltip>
                         </LPolyline>
                         <PolylineDecorator
-                            @click="goToThisDoc(tool._id)"
+                            @dblclick="goToThisDoc(tool._id)"
                             :lat-lngs="tool.coordinates"
                             :icon-size="tool.iconSize"
                             :icon-name="tool.iconName"
@@ -79,7 +81,7 @@
                         <LMarker
                             :lat-lng="tool.coordinates"
                             :icon="defaultIcon"
-                            @click="goToThisDoc(tool._id)"
+                            @dblclick="goToThisDoc(tool._id)"
                             :visible="tool.visible"
                         >
                             <LIcon
@@ -105,9 +107,13 @@
                             <LTooltip
                                 v-if="tool.tooltip"
                                 :options="tooltipOptions"
-                                @click="goToThisDoc(tool._id)"
+                                @dblclick="goToThisDoc(tool._id)"
                             >
-                                {{ tool.tooltip }}
+                                <p>{{ tool.tooltip.text }}</p>
+                                <img
+                                    v-if="tool.tooltip.image"
+                                    :src="tool.tooltip.image"
+                                />
                             </LTooltip>
                         </LMarker>
                     </div>
@@ -116,7 +122,7 @@
                         <LMarker
                             :lat-lng="tool.coordinates"
                             :icon="CircleIcon"
-                            @click="goToThisDoc(tool._id)"
+                            @dblclick="goToThisDoc(tool._id)"
                             :visible="tool.visible"
                         >
                             <LIcon
@@ -138,7 +144,11 @@
                                             tool.secondaryColor,
                                     }"
                                 >
-                                    {{ tool.tooltip }}
+                                    <p>{{ tool.tooltip.text }}</p>
+                                    <img
+                                        v-if="tool.tooltip.image"
+                                        :src="tool.tooltip.image"
+                                    />
                                 </div>
                             </LIcon>
                         </LMarker>
@@ -148,7 +158,6 @@
             </div>
             <!-- end docs_list -->
 
-            <LControlLayers position="bottomright"></LControlLayers>
             <LControlZoom position="bottomright"></LControlZoom>
         </LMap>
     </div>
@@ -165,7 +174,6 @@ import {
     LTooltip,
     LIcon,
     LControlZoom,
-    LControlLayers,
 } from "vue2-leaflet";
 
 import PolylineDecorator from "@/components/polyline-decorator";
@@ -218,18 +226,9 @@ export default {
         dynamicAnchor(iconSize) {
             return [iconSize / 2, iconSize * 1.15];
         },
-
         goToThisDoc(_id) {
             const currentRoute = this.$router.currentRoute;
-            const condition = ["create doc", "update doc"].includes(
-                currentRoute.name
-            );
-
-            const pathThing = condition
-                ? currentRoute.path.split("/")[1]
-                : "read";
-
-            const path = `/${pathThing}/${_id}`;
+            const path = `/doc/${_id}`;
             if (path != currentRoute.fullPath) this.$router.push(path);
         },
     },
@@ -266,7 +265,6 @@ export default {
         LControlZoom,
         PolylineDecorator,
         LTooltip,
-        LControlLayers,
     },
 };
 </script>
