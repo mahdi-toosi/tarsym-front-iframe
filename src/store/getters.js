@@ -7,18 +7,15 @@ export default {
         else return [];
     },
     DocWithChildsTools: (state, getters) => {
-        const routeName = router.currentRoute.name,
-            map_ZL = state.map.zoom;
+        const routeName = router.currentRoute.name;
         let tools = [];
 
         if (routeName === "read doc") {
             const docLayer = getters.DocLayer;
-            const doc_ZL = docLayer.zoomLevel;
-            if (docLayer.root ? doc_ZL <= map_ZL : true) {
-                let docTools = docLayer.tools;
-                docTools.forEach(tool => (tool._id = docLayer._id));
-                tools = tools.concat(docTools);
-            }
+            let docTools = docLayer.tools;
+            docTools.forEach(tool => (tool._id = docLayer._id));
+            tools = tools.concat(docTools);
+
             if (!docLayer.childs_id.length) return tools;
             // * add childs tools to map
             getters.DocChilds(getters.DocLayer).forEach(child => {

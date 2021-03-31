@@ -6,8 +6,14 @@ export default {
     // !  read_this_doc
     async read_this_doc({ commit, dispatch }) {
         const _id = router.currentRoute.params._id;
+        if (!_id) {
+            commit("SET_ERROR", "مسیر درخواستی معتبر نمیباشد ...");
+            return;
+        }
+
         const doc = await dispatch("get_this_docs", [_id]);
-        if (!doc) return;
+
+        if (!doc || !doc.length) return;
         const decoded_docs = await dispatch("decode_the_docs", {
             docs: doc
         });
@@ -26,7 +32,6 @@ export default {
     async get_children({ dispatch, commit }, childs_id) {
         const childs = await dispatch("get_this_docs", childs_id);
         if (!childs) return;
-
         const decoded_childs = await dispatch("decode_the_docs", {
             docs: childs,
             deleteRoot: true
@@ -64,10 +69,10 @@ export default {
     },
     // ! decode_the_docs
     async decode_the_docs(ctx, { docs, deleteRoot }) {
-        const Docs = docs.data || docs;
+        console.log("decode_the_docs");
         const newData = [];
-        for (let index = 0; index < Docs.length; index++) {
-            const doc = Docs[index];
+        for (let index = 0; index < docs.length; index++) {
+            const doc = docs[index];
             if (doc.alreadyFetched) {
                 newData.push(doc);
                 continue;

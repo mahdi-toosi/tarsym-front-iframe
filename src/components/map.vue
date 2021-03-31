@@ -228,7 +228,7 @@ export default {
         },
         goToThisDoc(_id) {
             const currentRoute = this.$router.currentRoute;
-            const path = `/doc/${_id}`;
+            const path = `/embed/${_id}`;
             if (path != currentRoute.fullPath) this.$router.push(path);
         },
     },

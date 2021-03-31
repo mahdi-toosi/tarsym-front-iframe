@@ -8,7 +8,7 @@ Vue.use(VueRouter);
 
 const routes = [
     {
-        path: "/doc/:_id",
+        path: "/embed/:_id",
         name: "read doc",
         component: Home
     },
